@@ -3,39 +3,36 @@
 #include <vector>
 
 #include "mapgen.h"
-#include "heightmap.h"
+#include "diamondsquare/diamondsquare.h"
+#include "mandelbrot/mandelbrot.h"
+#include "static/static.h"
 #include "../log/log.h"
 
 namespace openage {
 namespace mapgen {
 
 
-MapGen::MapGen(int chunks_per_side)
-	:
-	map((chunks_per_side * chunk_size) * (chunks_per_side * chunk_size), 5),
-	size{chunks_per_side * chunk_size, chunks_per_side * chunk_size} {}
+MapGen::MapGen(int chunks_per_side,int chunk_size, MapGen::Engine engine) {
+	switch(engine) {
+		case Engine::Mandelbrot :
+			this->map = new mapgen::Mandelbrot(chunks_per_side,chunk_size);
+			break;
+		case Engine::DiamondSquare :
+			this->map = new mapgen::Diamondsquare(chunks_per_side,chunk_size);
+			break;
+		case Engine::Static :
+			this->map = new mapgen::Static(chunks_per_side,chunk_size);
+			break;
+	}
+}
 
 int *MapGen::generate() {
-	Heightmap heightmap(this->size);
-	heightmap.generate();
-
-	for (int y = 0; y < this->size.se; y++) {
-		for (int x = 0; x < this->size.ne; x++) {
-			float height = heightmap.tile(x, y);
-			int index = this->size.ne * y + x;
-			if (height > 0) {
-				this->map[index] = 0;
-			} else if (height == 0) {
-				this->map[index] = 16;
-			}
-		}
-	}
-
-	return this->map.data();
+	this->map->generate();
+	return this->map->map.data();
 }
 
 coord::tile_delta MapGen::get_size() const {
-	return this->size;
+	return this->map->size;
 }
 
 } // namespace mapgen

@@ -121,7 +121,8 @@ GameMain::GameMain(Engine *engine)
 
 	// create the terrain which will be filled by chunks
 	this->terrain = std::make_shared<Terrain>(assetmanager, terrain_types, blending_modes, true);
-	mapgen::MapGen mapgen{4};
+	// choose map engine
+ 	mapgen::MapGen mapgen{1,16,mapgen::MapGen::Engine::Mandelbrot};
 
 	this->terrain->fill(mapgen.generate(), mapgen.get_size());
 	this->placed_units.set_terrain(this->terrain);
